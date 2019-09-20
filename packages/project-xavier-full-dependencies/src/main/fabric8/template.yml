@@ -1,0 +1,43 @@
+kind: Template
+parameters:
+  - name: "NAMESPACE"
+    displayName: "Namespace"
+    description: "The OpenShift Namespace where the ImageStream resides."
+    value: "openshift"
+  - name: "DATABASE_SERVICE_NAME"
+    displayName: "Database Service Name"
+    description: "The name of the OpenShift Service exposed for the database."
+    value: "xavier-integration-db"
+    required: true
+  - name: "POSTGRESQL_USER"
+    displayName: "PostgreSQL Connection Username"
+    description: "Username for PostgreSQL user that will be used for accessing the database."
+    generate: "expression"
+    from: "user[A-Z0-9]{3}"
+    required: "true"
+  - name: "POSTGRESQL_PASSWORD"
+    displayName: "PostgreSQL Connection Password"
+    description: "Password for the PostgreSQL connection user."
+    generate: "expression"
+    from: "[a-zA-Z0-9]{16}"
+    required: "true"
+  - name: "POSTGRESQL_DATABASE"
+    displayName: "PostgreSQL Database Name"
+    description: "Name of the PostgreSQL database accessed."
+    value: "migration-analytics"
+    required: true
+  - name: "POSTGRESQL_VERSION"
+    displayName: "Version of PostgreSQL Image"
+    description: "Version of PostgreSQL image to be used."
+    value: "9.6"
+    required: true
+  - name: "DATABASE_VOLUME_CAPACITY"
+    displayName: "Database Volume Capacity"
+    description: "Database volume space available for data, e.g. 512Mi, 2Gi."
+    value: "1Gi"
+    required: true
+  - name: "POSTGRESQL_MEMORY_LIMIT"
+    displayName: "Database Memory Limit"
+    description: "Database maximum amount of memory the container can use."
+    value: "512Mi"
+    required: true

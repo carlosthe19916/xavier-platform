@@ -1,0 +1,21 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: ${DATABASE_SERVICE_NAME}
+  labels:
+    service: migration-analytics-db
+  annotations:
+    template.openshift.io/expose-uri: "postgres://{.spec.clusterIP}:{.spec.ports[?(.name==\"postgresql\")].port}"
+spec:
+  ports:
+    - name: "postgresql"
+      nodePort: 0
+      port: 5432
+      protocol: TCP
+      targetPort: 5432
+  selector:
+    service: migration-analytics-db
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}

@@ -1,0 +1,86 @@
+kind: DeploymentConfig
+apiVersion: v1
+metadata:
+  name: ${DATABASE_SERVICE_NAME}
+  labels:
+    service: migration-analytics-db
+  annotations:
+    template.alpha.openshift.io/wait-for-ready: true
+spec:
+  replicas: 1
+  selector:
+    service: migration-analytics-db
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        name: ${DATABASE_SERVICE_NAME}
+        service: migration-analytics-db
+    spec:
+      containers:
+        - image: " "
+          name: postgresql
+          capabilities: {}
+          env:
+            - name: POSTGRESQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: ${DATABASE_SERVICE_NAME}
+                  key: database-user
+            - name: POSTGRESQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ${DATABASE_SERVICE_NAME}
+                  key: database-password
+            - name: POSTGRESQL_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: ${DATABASE_SERVICE_NAME}
+                  key: database-name
+          imagePullPolicy: "IfNotPresent"
+          livenessProbe:
+            exec:
+              command:
+                - /usr/libexec/check-container
+                - --live
+            initialDelaySeconds: 120
+            timeoutSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+                - /usr/libexec/check-container
+            initialDelaySeconds: 5
+            timeoutSeconds: 1
+          ports:
+            - containerPort: 5432
+              protocol: TCP
+          resources:
+            limits:
+              memory: ${POSTGRESQL_MEMORY_LIMIT}
+          securityContext:
+            capabilities: {}
+            privileged: false
+          terminationMessagePath: /dev/termination-log
+          volumeMounts:
+            - name: ${DATABASE_SERVICE_NAME}-data
+              mountPath: /var/lib/pgsql/data
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      volumes:
+        - name: ${DATABASE_SERVICE_NAME}-data
+          persistentVolumeClaim:
+            claimName: ${DATABASE_SERVICE_NAME}
+  triggers:
+    - type: ImageChange
+      imageChangeParams:
+        automatic: true
+        containerNames:
+          - postgresql
+        from:
+          kind: ImageStreamTag
+          namespace: ${NAMESPACE}
+          name: postgresql:${POSTGRESQL_VERSION}
+        lastTriggeredImage: ""
+    - type: ConfigChange
+"status": {}
